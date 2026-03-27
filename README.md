@@ -143,5 +143,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Author
 
-Yang Xinyu from A*STAR IHPC (yang_xinyu@a-star.edu.sg)
+Dr. Xinyu Yang from A*STAR IHPC (yang_xinyu@a-star.edu.sg)
 
