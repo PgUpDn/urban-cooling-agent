@@ -3,7 +3,7 @@ import type { ViewState, Message, SimulationResults, WorkflowStep, LiveParams } 
 import { IMG_USER_AVATAR } from './constants';
 import {
   checkBackendHealth, startSimulation, getSimulationMessages,
-  getSimulationResults, getSimulationParams, type ProgressMessage,
+  getSimulationResults, getSimulationParams, getSimulationStatus, type ProgressMessage,
 } from './services/agentService';
 import { WorkflowSidebar } from './components/WorkflowSidebar';
 import { ChatInterface } from './components/ChatInterface';
@@ -18,6 +18,11 @@ function nid() { return `m-${Date.now()}-${++mc}`; }
 const STAGE_ORDER = ['intent_analysis', 'geometry_analysis', 'solver_running', 'result_integration', 'complete'];
 const STAGE_LABELS = ['Intent Analysis', 'Geometry Analysis', 'Solver Orchestration', 'Result Integration'];
 const STAGE_DESCS = ['Parse query & determine solvers', 'Analyze STL geometry', 'Run CFD / solar solvers', 'Generate narrative report'];
+const STORAGE_KEYS = {
+  activeSessionId: 'urbanCooling:activeSessionId',
+  completedSessionId: 'urbanCooling:lastCompletedSessionId',
+  completedResults: 'urbanCooling:lastCompletedResults',
+} as const;
 
 function buildSteps(stage: string): WorkflowStep[] {
   const idx = STAGE_ORDER.indexOf(stage);
@@ -27,6 +32,36 @@ function buildSteps(stage: string): WorkflowStep[] {
   }));
 }
 const IDLE = STAGE_LABELS.map((label, i) => ({ id: String(i + 1), label, desc: STAGE_DESCS[i], status: 'pending' as const }));
+
+function readStorage(key: string): string | null {
+  if (typeof window === 'undefined') return null;
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+
+function writeStorage(key: string, value: string) {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.setItem(key, value); } catch {}
+}
+
+function removeStorage(key: string) {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.removeItem(key); } catch {}
+}
+
+function readStoredResults(): SimulationResults | null {
+  const raw = readStorage(STORAGE_KEYS.completedResults);
+  if (!raw) return null;
+  try { return JSON.parse(raw) as SimulationResults; }
+  catch {
+    removeStorage(STORAGE_KEYS.completedResults);
+    return null;
+  }
+}
+
+function persistCompletedResults(sessionId: string, results: SimulationResults) {
+  writeStorage(STORAGE_KEYS.completedSessionId, sessionId);
+  try { writeStorage(STORAGE_KEYS.completedResults, JSON.stringify(results)); } catch {}
+}
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('setup');
@@ -38,8 +73,10 @@ const App: React.FC = () => {
   const [simRunning, setSimRunning] = useState(false);
   const [liveParams, setLiveParams] = useState<LiveParams>({});
   const [chatLoading, setChatLoading] = useState(false);
+  const [pendingQuery, setPendingQuery] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const miRef = useRef(0);
+  const restoreAttemptedRef = useRef(false);
 
   useEffect(() => {
     let c = false;
@@ -58,6 +95,17 @@ const App: React.FC = () => {
     return () => { c = true; };
   }, []);
 
+  useEffect(() => {
+    const storedResults = readStoredResults();
+    const storedCompletedSessionId = readStorage(STORAGE_KEYS.completedSessionId);
+    if (storedCompletedSessionId) setSessionId(storedCompletedSessionId);
+    if (storedResults) {
+      setSimResults(storedResults);
+      setSteps(buildSteps('complete'));
+      setView('results');
+    }
+  }, []);
+
   const stopPoll = useCallback(() => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } }, []);
   const startPoll = useCallback((sid: string) => {
     stopPoll(); miRef.current = 0;
@@ -74,9 +122,8 @@ const App: React.FC = () => {
           if (msgs.length) setMessages(p => [...p, ...msgs]);
         }
         try {
-          const { getSimulationStatus } = await import('./services/agentService');
-          const sr = await getSimulationStatus(sid).then(d => ({ ok: true, json: () => d })).catch(() => ({ ok: false, json: () => ({}) }));
-          if (sr.ok) { const sd = await sr.json(); if (sd.stage) setSteps(buildSteps(sd.stage)); }
+          const sd = await getSimulationStatus(sid);
+          if (sd.stage) setSteps(buildSteps(sd.stage));
           const pd = await getSimulationParams(sid);
           if (pd.params) setLiveParams(pd.params);
         } catch {}
@@ -85,6 +132,8 @@ const App: React.FC = () => {
           const res = await getSimulationResults(sid);
           if (res.results) {
             setSimResults(res.results);
+            persistCompletedResults(sid, res.results);
+            removeStorage(STORAGE_KEYS.activeSessionId);
             const rpt = res.results.response;
             if (rpt) {
               const preview = rpt.length > 800 ? rpt.slice(0, 800) + '\u2026' : rpt;
@@ -93,14 +142,95 @@ const App: React.FC = () => {
             setSteps(buildSteps('complete'));
           }
           setSimRunning(false);
-        } else if (status === 'error') { stopPoll(); setSimRunning(false); }
+        } else if (status === 'error') { stopPoll(); removeStorage(STORAGE_KEYS.activeSessionId); setSimRunning(false); }
       } catch {}
     }, 2000);
   }, [stopPoll]);
   useEffect(() => stopPoll, [stopPoll]);
 
+  useEffect(() => {
+    if (!backendReady || restoreAttemptedRef.current) return;
+    restoreAttemptedRef.current = true;
+    const activeSessionId = readStorage(STORAGE_KEYS.activeSessionId);
+    if (!activeSessionId) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const status = await getSimulationStatus(activeSessionId);
+        if (cancelled) return;
+
+        setSessionId(activeSessionId);
+        if (status.stage) setSteps(buildSteps(status.stage));
+
+        if (status.status === 'completed') {
+          const res = await getSimulationResults(activeSessionId);
+          if (cancelled) return;
+          if (res.results) {
+            setSimResults(res.results);
+            persistCompletedResults(activeSessionId, res.results);
+            setSteps(buildSteps('complete'));
+            setView('results');
+          }
+          removeStorage(STORAGE_KEYS.activeSessionId);
+          setSimRunning(false);
+          return;
+        }
+
+        if (status.status === 'queued' || status.status === 'started' || status.status === 'running') {
+          setSimRunning(true);
+          setSimResults(null);
+          setView('setup');
+          try {
+            const pd = await getSimulationParams(activeSessionId);
+            if (!cancelled && pd.params) setLiveParams(pd.params);
+          } catch {}
+          setMessages(p => [...p, { id: nid(), sender: 'agent', text: 'Restored in-progress analysis after page reload.', timestamp: ts(), type: 'status' }]);
+          startPoll(activeSessionId);
+          return;
+        }
+
+        if (status.status === 'error') {
+          removeStorage(STORAGE_KEYS.activeSessionId);
+          setSimRunning(false);
+        }
+      } catch {
+        removeStorage(STORAGE_KEYS.activeSessionId);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [backendReady, startPoll]);
+
+  const launchSimulation = useCallback(async (query: string) => {
+    setSimRunning(true); setSimResults(null); setLiveParams({}); setSteps(buildSteps('intent_analysis'));
+    setMessages(p => [...p, { id: nid(), sender: 'agent', text: 'Starting analysis pipeline\u2026', timestamp: ts(), type: 'status' }]);
+    try {
+      const { sessionId: sid } = await startSimulation({ query });
+      writeStorage(STORAGE_KEYS.activeSessionId, sid);
+      setSessionId(sid); startPoll(sid);
+    } catch (e: any) {
+      setSimRunning(false); setSteps(IDLE);
+      setMessages(p => [...p, { id: nid(), sender: 'agent', text: `Failed: ${e?.message}`, timestamp: ts(), type: 'text' }]);
+    }
+  }, [startPoll]);
+
+  const handleConfirm = useCallback(() => {
+    if (!pendingQuery) return;
+    const q = pendingQuery;
+    setPendingQuery(null);
+    setMessages(p => [...p, { id: nid(), sender: 'user', text: 'Confirmed \u2014 proceed with the analysis.', timestamp: ts(), type: 'text' }]);
+    launchSimulation(q);
+  }, [pendingQuery, launchSimulation]);
+
+  const handleReject = useCallback(() => {
+    setPendingQuery(null);
+    setMessages(p => [...p, { id: nid(), sender: 'user', text: 'Cancelled.', timestamp: ts(), type: 'text' }, { id: nid(), sender: 'agent', text: 'No problem. Feel free to describe a different scenario or adjust the parameters.', timestamp: ts(), type: 'text' }]);
+  }, []);
+
   const handleSend = useCallback(async (text: string) => {
     if (chatLoading || simRunning) return;
+    if (pendingQuery) setPendingQuery(null);
     setMessages(p => [...p, { id: nid(), sender: 'user', text, timestamp: ts(), type: 'text' }]);
     if (!backendReady) { setMessages(p => [...p, { id: nid(), sender: 'agent', text: 'Backend not connected.', timestamp: ts(), type: 'text' }]); return; }
     setChatLoading(true);
@@ -108,23 +238,29 @@ const App: React.FC = () => {
       const { sendChatMessage } = await import('./services/agentService');
       const hist = messages.filter(m => m.text && m.type === 'text').slice(-20).map(m => ({ role: m.sender === 'user' ? 'user' as const : 'agent' as const, content: m.text! }));
       const result = await sendChatMessage(text, hist, sessionId);
-      if (result.action === 'analyze') {
+      if (result.action === 'confirm') {
         setChatLoading(false);
-        const q = result.query || text;
-        setSimRunning(true); setSimResults(null); setLiveParams({}); setSteps(buildSteps('intent_analysis'));
-        setMessages(p => [...p, { id: nid(), sender: 'agent', text: `Starting analysis pipeline\u2026`, timestamp: ts(), type: 'status' }]);
-        try {
-          const { sessionId: sid } = await startSimulation({ query: q });
-          setSessionId(sid); startPoll(sid);
-        } catch (e: any) { setSimRunning(false); setSteps(IDLE); setMessages(p => [...p, { id: nid(), sender: 'agent', text: `Failed: ${e?.message}`, timestamp: ts(), type: 'text' }]); }
+        const scenario = result.scenario || result.query || text;
+        setPendingQuery(result.query || text);
+        setMessages(p => [...p, { id: nid(), sender: 'agent', text: `**Proposed Scenario**\n\n${scenario}\n\nShall I proceed with this analysis?`, timestamp: ts(), type: 'confirm' }]);
+      } else if (result.action === 'analyze') {
+        setChatLoading(false);
+        launchSimulation(result.query || text);
       } else {
         setMessages(p => [...p, { id: nid(), sender: 'agent', text: result.response || '', timestamp: ts(), type: 'text' }]);
       }
     } catch { setMessages(p => [...p, { id: nid(), sender: 'agent', text: 'Failed to get response.', timestamp: ts(), type: 'text' }]); }
     finally { setChatLoading(false); }
-  }, [backendReady, chatLoading, simRunning, messages, sessionId, startPoll]);
+  }, [backendReady, chatLoading, simRunning, messages, sessionId, pendingQuery, launchSimulation]);
 
-  const handleNew = useCallback(() => { setSimResults(null); setSessionId(null); setLiveParams({}); setSteps(IDLE); setMessages(p => [...p, { id: nid(), sender: 'agent', text: 'Ready for a new analysis.', timestamp: ts(), type: 'status' }]); }, []);
+  const handleNew = useCallback(() => {
+    removeStorage(STORAGE_KEYS.activeSessionId);
+    setSimResults(null);
+    setSessionId(null);
+    setLiveParams({});
+    setSteps(IDLE);
+    setMessages(p => [...p, { id: nid(), sender: 'agent', text: 'Ready for a new analysis.', timestamp: ts(), type: 'status' }]);
+  }, []);
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-white">
@@ -152,7 +288,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex overflow-hidden relative">
         {view === 'setup' && (<>
           <WorkflowSidebar steps={steps} title="Execution Plan" />
-          <ChatInterface messages={messages} onSend={handleSend} simRunning={simRunning} chatLoading={chatLoading} simCompleted={!!simResults} backendReady={backendReady} onViewDashboard={() => setView('results')} onNewAnalysis={handleNew} />
+          <ChatInterface messages={messages} onSend={handleSend} simRunning={simRunning} chatLoading={chatLoading} simCompleted={!!simResults} backendReady={backendReady} onViewDashboard={() => setView('results')} onNewAnalysis={handleNew} pendingConfirm={!!pendingQuery} onConfirm={handleConfirm} onReject={handleReject} />
           <ParamSidebar simulationResults={simResults} liveParams={liveParams} simRunning={simRunning} />
         </>)}
         {view === 'results' && <ResultsDashboard onCompare={() => setView('comparison')} simulationResults={simResults} />}

@@ -11,9 +11,12 @@ interface ChatInterfaceProps {
   backendReady: boolean;
   onViewDashboard: () => void;
   onNewAnalysis: () => void;
+  pendingConfirm?: boolean;
+  onConfirm?: () => void;
+  onReject?: () => void;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSend, simRunning, chatLoading, simCompleted, backendReady, onViewDashboard, onNewAnalysis }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSend, simRunning, chatLoading, simCompleted, backendReady, onViewDashboard, onNewAnalysis, pendingConfirm, onConfirm, onReject }) => {
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -40,6 +43,21 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSend, 
         {messages.map(msg => (
           <div key={msg.id}>
             {msg.type === 'status' && <div className="flex justify-center my-2"><div className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 text-xs text-slate-500 flex items-center gap-1.5 max-w-[80%]"><span className="material-icons-outlined text-[14px]">cloud_sync</span><span className="truncate">{msg.text}</span></div></div>}
+            {msg.type === 'confirm' && (
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0 border border-slate-300"><img src={IMG_AGENT_AVATAR} alt="agent" className="w-full h-full object-cover" /></div>
+                <div className="flex flex-col items-start max-w-[80%]">
+                  <div className="p-4 rounded-2xl rounded-tl-sm shadow-sm border-2 border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-sm leading-relaxed whitespace-pre-wrap text-slate-800 dark:text-slate-200">{msg.text}</div>
+                  {pendingConfirm && (
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={onConfirm} className="px-4 py-1.5 text-xs font-bold text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors shadow-sm flex items-center gap-1"><span className="material-icons-outlined text-sm">play_arrow</span>Confirm &amp; Run</button>
+                      <button onClick={onReject} className="px-4 py-1.5 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors flex items-center gap-1"><span className="material-icons-outlined text-sm">close</span>Cancel</button>
+                    </div>
+                  )}
+                  <span className="text-[10px] text-slate-400 mt-1 mx-1">{msg.timestamp}</span>
+                </div>
+              </div>
+            )}
             {msg.type === 'text' && (
               <div className={`flex gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                 <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden shrink-0 border border-slate-300"><img src={msg.sender === 'agent' ? IMG_AGENT_AVATAR : IMG_USER_AVATAR} alt={msg.sender} className="w-full h-full object-cover" /></div>

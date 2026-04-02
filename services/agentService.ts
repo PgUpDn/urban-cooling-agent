@@ -20,7 +20,7 @@ export async function checkBackendHealth(): Promise<boolean> {
 }
 
 export interface ChatHistoryEntry { role: 'user' | 'agent'; content: string; }
-export interface ChatResponse { action: 'chat' | 'analyze'; response?: string; query?: string; }
+export interface ChatResponse { action: 'chat' | 'analyze' | 'confirm'; response?: string; query?: string; scenario?: string; }
 
 export async function sendChatMessage(
   message: string, history: ChatHistoryEntry[] = [], sessionId?: string | null,

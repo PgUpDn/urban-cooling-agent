@@ -5,7 +5,7 @@ export interface Message {
   sender: 'user' | 'agent';
   text?: string;
   timestamp: string;
-  type: 'text' | 'form' | 'status';
+  type: 'text' | 'form' | 'status' | 'confirm';
   formData?: {
     type: 'resolution';
     options: Array<{
