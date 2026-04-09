@@ -22,7 +22,9 @@ const DISTRICTS = [
   { id: '8', name: 'NTU', lat: 1.3483, lng: 103.6831, radius: 2000 },
 ];
 
+const _BACKEND_URL: string = process.env.BACKEND_API_URL || '';
 function geoApiBase(): string {
+  if (_BACKEND_URL) return _BACKEND_URL.replace(/\/+$/, '') + '/geo-api';
   if (typeof window !== 'undefined' && window.location.pathname.startsWith('/cooling')) return '/cooling/geo-api';
   return '/geo-api';
 }
