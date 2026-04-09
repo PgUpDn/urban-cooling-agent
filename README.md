@@ -244,11 +244,14 @@ A reference nginx configuration is included in `nginx-cooling.conf`:
 
 5. **Results dashboard** — the frontend displays PET/MRT temporal profiles, heatmaps, wind fields, and provides VTK/CSV downloads
 
-## Author
-
-**Dr. Xinyu Yang**
-A\*STAR Institute of High Performance Computing (IHPC), Singapore
-
 ## License
 
-MIT
+MIT License - Feel free to use and modify for your projects.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Author
+
+Dr. Xinyu Yang from A*STAR IHPC (yang_xinyu@a-star.edu.sg)
