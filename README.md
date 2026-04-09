@@ -271,12 +271,16 @@ python main.py
 
 <br/>
 
----
+## License
 
-<div align="center">
+MIT License - Feel free to use and modify for your projects.
 
-**Dr. Xinyu Yang** · A\*STAR Institute of High Performance Computing (IHPC), Singapore
+## Contributing
 
-MIT License
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Author
+
+Dr. Xinyu Yang from A*STAR IHPC (yang_xinyu@a-star.edu.sg)
 
 </div>
