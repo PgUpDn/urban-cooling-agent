@@ -79,10 +79,10 @@ Chat history, selected region, simulation results, and active tab all survive pa
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                    Frontend                           │
-│            React · Vite · Tailwind · Leaflet          │
+│                    Frontend                          │
+│            React · Vite · Tailwind · Leaflet         │
 │                                                      │
-│   💬 Chat    🗺️ Map    📊 Dashboard    🔀 Compare     │
+│   💬 Chat    🗺️ Map    📊 Dashboard    🔀 Compare      │
 └────────┬─────────────────────┬───────────────────────┘
          │                     │
          ▼                     ▼
@@ -90,7 +90,7 @@ Chat history, selected region, simulation results, and active tab all survive pa
 │   urban_agent   │   │  sg-3d-export   │
 │                 │   │                 │
 │  LangGraph      │   │  BuildingIndex  │
-│  CFD Solver     │   │  154k STLs     │
+│  CFD Solver     │   │  154k STLs      │
 │  Solar Solver   │   │  Region Clip    │
 │  PET / MRT      │   │                 │
 │  NEA Weather    │   │                 │
