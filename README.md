@@ -77,77 +77,61 @@ Chat history, selected region, simulation results, and active tab all survive pa
 
 ## Architecture
 
-```
-┌──────────────────────────────────────────────────────┐
-│                    Frontend                           │
-│            React · Vite · Tailwind · Leaflet          │
-│                                                      │
-│   💬 Chat    🗺️ Map    📊 Dashboard    🔀 Compare     │
-└────────┬─────────────────────┬───────────────────────┘
-         │                     │
-         ▼                     ▼
-┌─────────────────┐   ┌─────────────────┐
-│   urban_agent   │   │  sg-3d-export   │
-│                 │   │                 │
-│  LangGraph      │   │  BuildingIndex  │
-│  CFD Solver     │   │  154k STLs     │
-│  Solar Solver   │   │  Region Clip    │
-│  PET / MRT      │   │                 │
-│  NEA Weather    │   │                 │
-│                 │   │                 │
-│  FastAPI        │   │  FastAPI        │
-└─────────────────┘   └─────────────────┘
-```
+```mermaid
+graph TB
+  subgraph Frontend["Frontend — React · Vite · Tailwind · Leaflet"]
+    Chat["💬 Chat"]
+    Map["🗺️ Map"]
+    Dash["📊 Dashboard"]
+    Comp["🔀 Compare"]
+  end
 
-**Monorepo structure:**
+  subgraph Agent["urban_agent — FastAPI"]
+    LG[LangGraph Agent]
+    CFD[CFD Solver]
+    Solar[Solar Solver]
+    PET[PET / MRT]
+    Weather[NEA Weather]
+  end
 
-```
-├── components/              # React UI components
-│   ├── ChatInterface        #   conversational agent interface
-│   ├── RegionSelect         #   Leaflet map with drawing tools
-│   ├── ResultsDashboard     #   heatmaps, charts, downloads
-│   └── ComparisonView       #   side-by-side scenario diff
-│
-├── services/                # API client layer
-│
-├── backend/urban_agent/     # Simulation engine
-│   ├── intelligent_building_agent   LangGraph orchestrator
-│   ├── coupled_UrGen_v1/           solver core
-│   ├── wrapper/                    solver interfaces
-│   └── weather_client              NEA live data
-│
-└── backend/sg-3d-export/    # Geometry service
-    ├── building_index              spatial index
-    ├── stl_processor               clip & merge
-    └── models                      district definitions
+  subgraph Geo["sg-3d-export — FastAPI"]
+    Index[Building Index]
+    STL["154k STLs"]
+    Clip[Region Clip]
+  end
+
+  Chat & Map --> Agent
+  Map --> Geo
+  Agent --> Dash
+  Geo --> Agent
+
+  style Frontend fill:#f0f9ff,stroke:#3b82f6,stroke-width:2px
+  style Agent fill:#faf5ff,stroke:#8b5cf6,stroke-width:2px
+  style Geo fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
 ```
 
 ### Simulation Pipeline
 
-```
-  Prompt ─→ Intent Classification ─→ ┬─ Chat response
-                                     ├─ Clarify (missing time)
-                                     └─ Confirm scenario
-                                             │
-                                     ┌───────┴────────┐
-                                     ▼                ▼
-                              Intent Analyzer   Geometry Analyzer
-                              · datetime        · STL parsing
-                              · NEA weather     · building envelopes
-                              · solver selection· footprint stats
-                                     │                │
-                                     └───────┬────────┘
-                                             ▼
-                                   Solver Orchestrator
-                                   · CFD (wind + temperature)
-                                   · Solar (DNI ray-tracing)
-                                   · PET / MRT comfort indices
-                                             │
-                                             ▼
-                                    Result Integrator
-                                    · narrative report
-                                    · heatmap generation
-                                    · VTK / CSV export
+```mermaid
+graph LR
+  P["User Prompt"] --> IC["Intent\nClassification"]
+  IC -->|chat| R1["💬 Reply"]
+  IC -->|missing info| R2["❓ Clarify"]
+  IC -->|ready| R3["✅ Confirm"]
+  R3 --> IA["Intent Analyzer\n· datetime · weather\n· solver selection"]
+  R3 --> GA["Geometry Analyzer\n· STL parsing\n· building envelopes"]
+  IA & GA --> SO["Solver Orchestrator\n· CFD · Solar\n· PET / MRT"]
+  SO --> RI["Result Integrator\n· report · heatmaps\n· VTK / CSV"]
+
+  style P fill:#dbeafe,stroke:#3b82f6
+  style IC fill:#f3e8ff,stroke:#8b5cf6
+  style R1 fill:#f0fdf4,stroke:#22c55e
+  style R2 fill:#fef9c3,stroke:#eab308
+  style R3 fill:#f0fdf4,stroke:#22c55e
+  style IA fill:#faf5ff,stroke:#8b5cf6
+  style GA fill:#faf5ff,stroke:#8b5cf6
+  style SO fill:#fef2f2,stroke:#ef4444
+  style RI fill:#f0f9ff,stroke:#3b82f6
 ```
 
 <br/>
