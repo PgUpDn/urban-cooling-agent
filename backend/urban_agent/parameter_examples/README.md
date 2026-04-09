@@ -1,22 +1,22 @@
-# 参数文件示例
+# Parameter file examples
 
-本目录包含参数追踪功能生成的JSON文件示例。
+This directory contains sample JSON files produced by the parameter tracking feature.
 
-## 📁 文件说明
+## 📁 File descriptions
 
 ### 1. `llm_suggested_parameters_example.json`
 
-LLM分析用户查询后建议的参数。
+Parameters suggested by the LLM after analyzing the user query.
 
-**场景**: 用户查询 "Analyze wind flow around the building with strong typhoon conditions"
+**Scenario**: User query "Analyze wind flow around the building with strong typhoon conditions"
 
-**LLM的分析**:
-- 识别出"typhoon conditions"关键词
-- 建议使用较高风速 (15.0 m/s)
-- 建议东风方向 (90°) - 东南亚台风典型方向
-- 调整温度和湿度到台风期间的典型值
+**LLM analysis**:
+- Detected the keyword "typhoon conditions"
+- Suggests a higher wind speed (15.0 m/s)
+- Suggests easterly wind direction (90°) — typical for typhoons in Southeast Asia
+- Adjusts temperature and humidity to typical values during typhoon conditions
 
-**文件内容**:
+**File contents**:
 ```json
 {
   "source": "LLM Analysis",
@@ -36,38 +36,38 @@ LLM分析用户查询后建议的参数。
 }
 ```
 
-**关键字段**:
-- `query`: 用户原始查询
-- `reasoning`: LLM的推理过程（为什么建议这些参数）
-- `required_solvers`: LLM判断需要的求解器
-- `parameters`: LLM建议的具体参数
+**Key fields**:
+- `query`: Original user query
+- `reasoning`: LLM reasoning (why these parameters were suggested)
+- `required_solvers`: Solvers the LLM determined are needed
+- `parameters`: Concrete parameters suggested by the LLM
 
 ---
 
 ### 2. `final_cfd_parameters_example.json`
 
-最终实际使用的CFD参数（合并后）。
+Final CFD parameters actually used (after merging).
 
-**参数来源**:
-1. **JSON配置文件** (`solver_parameters.json`):
+**Parameter sources**:
+1. **JSON configuration file** (`solver_parameters.json`):
    - `voxel_pitch: 1.0`
    - `buffer_ratio: 1.5`
    - `alpha_t: 0.1`
    - `alpha_rh: 0.1`
    - `building_radius: 500.0`
 
-2. **LLM建议** (覆盖JSON):
-   - `wind_speed: 15.0` → 被用户改为 12.0
-   - `wind_direction: 90.0` → 被用户改为 180.0
+2. **LLM suggestions** (override JSON):
+   - `wind_speed: 15.0` → changed by user to 12.0
+   - `wind_direction: 90.0` → changed by user to 180.0
    - `height: 2.0`
    - `temperature: 26.0`
    - `humidity: 90.0`
 
-3. **用户传入** (最高优先级):
-   - `wind_speed: 12.0` (用户认为15.0太强)
-   - `wind_direction: 180.0` (用户指定南风)
+3. **User input** (highest priority):
+   - `wind_speed: 12.0` (user felt 15.0 was too strong)
+   - `wind_direction: 180.0` (user specified southerly wind)
 
-**文件内容**:
+**File contents**:
 ```json
 {
   "source": "Final Merged Parameters",
@@ -78,39 +78,39 @@ LLM分析用户查询后建议的参数。
     "3. User parameters (final override)"
   ],
   "cfd": {
-    "wind_speed": 12.0,        // 用户覆盖了LLM的15.0
-    "wind_direction": 180.0,   // 用户覆盖了LLM的90.0
-    "height": 2.0,             // 来自LLM
-    "temperature": 26.0,       // 来自LLM
-    "humidity": 90.0,          // 来自LLM
-    "voxel_pitch": 1.0,        // 来自JSON配置
-    "buffer_ratio": 1.5,       // 来自JSON配置
-    "alpha_t": 0.1,            // 来自JSON配置
-    "alpha_rh": 0.1,           // 来自JSON配置
-    "building_radius": 500.0   // 来自JSON配置
+    "wind_speed": 12.0,        // User overrode LLM's 15.0
+    "wind_direction": 180.0,   // User overrode LLM's 90.0
+    "height": 2.0,             // From LLM
+    "temperature": 26.0,       // From LLM
+    "humidity": 90.0,          // From LLM
+    "voxel_pitch": 1.0,        // From JSON config
+    "buffer_ratio": 1.5,       // From JSON config
+    "alpha_t": 0.1,            // From JSON config
+    "alpha_rh": 0.1,           // From JSON config
+    "building_radius": 500.0   // From JSON config
   }
 }
 ```
 
-**关键特点**:
-- 包含所有参数（完整参数集）
-- 清楚标注参数优先级
-- 时间戳记录生成时间
+**Key characteristics**:
+- Contains all parameters (full parameter set)
+- Clearly indicates parameter precedence
+- Timestamp records when it was generated
 
 ---
 
 ### 3. `final_solar_parameters_example.json`
 
-最终实际使用的Solar参数。
+Final Solar parameters actually used.
 
-**场景**: 夏至日午后太阳分析
+**Scenario**: Solar analysis on a summer solstice afternoon
 
-**参数来源**:
-- 大部分来自JSON配置文件
-- LLM可能调整了时间到夏至日
-- DNI值根据夏季高辐射调整
+**Parameter sources**:
+- Mostly from the JSON configuration file
+- The LLM may have adjusted the time to the summer solstice
+- DNI adjusted for high summer irradiance
 
-**文件内容**:
+**File contents**:
 ```json
 {
   "source": "Final Merged Parameters",
@@ -121,91 +121,91 @@ LLM分析用户查询后建议的参数。
     "3. User parameters (final override)"
   ],
   "solar": {
-    "time": "2025-06-21 14:00:00+08:00",  // 夏至日下午2点
-    "latitude": 1.379,                     // 新加坡纬度
-    "longitude": 103.893,                  // 新加坡经度
-    "elevation": 14.0,                     // 海拔高度
-    "DNI": 850.0,                          // 高直射辐射（夏季）
-    "DHI": 200.0,                          // 散射辐射
-    "rays_per_receiver": 64,               // 光线追踪密度
-    "ground_radius": 25.0,                 // 地面半径
-    "shading_threshold": 0.1               // 遮阳阈值
+    "time": "2025-06-21 14:00:00+08:00",  // Summer solstice, 2 PM
+    "latitude": 1.379,                     // Singapore latitude
+    "longitude": 103.893,                  // Singapore longitude
+    "elevation": 14.0,                     // Elevation above sea level
+    "DNI": 850.0,                          // High direct normal irradiance (summer)
+    "DHI": 200.0,                          // Diffuse horizontal irradiance
+    "rays_per_receiver": 64,               // Ray tracing density
+    "ground_radius": 25.0,                 // Ground radius
+    "shading_threshold": 0.1               // Shading threshold
   }
 }
 ```
 
 ---
 
-## 🔍 如何使用这些示例
+## 🔍 How to use these examples
 
-### 1. 查看示例文件
+### 1. View the example files
 
 ```bash
-# 查看LLM建议
+# View LLM suggestions
 cat parameter_examples/llm_suggested_parameters_example.json | jq
 
-# 查看最终CFD参数
+# View final CFD parameters
 cat parameter_examples/final_cfd_parameters_example.json | jq
 
-# 查看最终Solar参数
+# View final Solar parameters
 cat parameter_examples/final_solar_parameters_example.json | jq
 ```
 
-### 2. 对比LLM建议和最终参数
+### 2. Compare LLM suggestions and final parameters
 
 ```bash
-# 查看LLM建议的CFD参数
+# CFD parameters from LLM suggestion
 jq '.parameters.cfd' parameter_examples/llm_suggested_parameters_example.json
 
-# 查看最终使用的CFD参数
+# Final CFD parameters in use
 jq '.cfd' parameter_examples/final_cfd_parameters_example.json
 
-# 对比差异
+# Compare differences
 diff <(jq '.parameters.cfd' parameter_examples/llm_suggested_parameters_example.json) \
      <(jq '.cfd' parameter_examples/final_cfd_parameters_example.json)
 ```
 
-### 3. 提取LLM的推理过程
+### 3. Extract the LLM reasoning
 
 ```bash
 jq -r '.reasoning' parameter_examples/llm_suggested_parameters_example.json
 ```
 
-### 4. 查看参数变化历史
+### 4. Inspect parameter change history
 
 ```bash
-# LLM建议的风速
+# Wind speed suggested by LLM
 jq '.parameters.cfd.wind_speed' parameter_examples/llm_suggested_parameters_example.json
-# 输出: 15.0
+# Output: 15.0
 
-# 最终使用的风速
+# Wind speed finally used
 jq '.cfd.wind_speed' parameter_examples/final_cfd_parameters_example.json
-# 输出: 12.0
+# Output: 12.0
 
-# 说明: 用户覆盖了LLM的建议
+# Note: User overrode the LLM suggestion
 ```
 
 ---
 
-## 📊 参数流转示例
+## 📊 Parameter flow example
 
-### 台风场景完整流程
+### Full typhoon scenario
 
-**1. 用户查询**
+**1. User query**
 ```
 "Analyze wind flow around the building with strong typhoon conditions"
 ```
 
-**2. LLM分析** → `llm_suggested_parameters_example.json`
+**2. LLM analysis** → `llm_suggested_parameters_example.json`
 ```
-识别关键词: "strong typhoon conditions"
-→ 建议 wind_speed: 15.0 m/s
-→ 建议 wind_direction: 90.0° (东风)
-→ 建议 temperature: 26.0°C
-→ 建议 humidity: 90.0%
+Detected keyword: "strong typhoon conditions"
+→ Suggest wind_speed: 15.0 m/s
+→ Suggest wind_direction: 90.0° (easterly)
+→ Suggest temperature: 26.0°C
+→ Suggest humidity: 90.0%
 ```
 
-**3. 加载JSON配置**
+**3. Load JSON configuration**
 ```
 voxel_pitch: 1.0
 buffer_ratio: 1.5
@@ -213,20 +213,20 @@ alpha_t: 0.1
 ...
 ```
 
-**4. 用户覆盖**
+**4. User overrides**
 ```python
 user_parameters = {
     "cfd": {
-        "wind_speed": 12.0,      # 用户认为15.0太强
-        "wind_direction": 180.0  # 用户要分析南风
+        "wind_speed": 12.0,      # User felt 15.0 was too strong
+        "wind_direction": 180.0  # User wanted to analyze southerly wind
     }
 }
 ```
 
-**5. 最终参数** → `final_cfd_parameters_example.json`
+**5. Final parameters** → `final_cfd_parameters_example.json`
 ```
-wind_speed: 12.0        ← 用户
-wind_direction: 180.0   ← 用户
+wind_speed: 12.0        ← User
+wind_direction: 180.0   ← User
 height: 2.0             ← LLM
 temperature: 26.0       ← LLM
 humidity: 90.0          ← LLM
@@ -237,14 +237,14 @@ buffer_ratio: 1.5       ← JSON
 
 ---
 
-## 🎯 实际使用场景
+## 🎯 Practical usage scenarios
 
-### 场景1: 审查LLM的参数建议
+### Scenario 1: Review LLM parameter suggestions
 
 ```python
 import json
 
-# 读取LLM建议
+# Read LLM suggestion
 with open('parameter_examples/llm_suggested_parameters_example.json') as f:
     llm = json.load(f)
 
@@ -252,34 +252,34 @@ print(f"Query: {llm['query']}")
 print(f"\nLLM Reasoning:\n{llm['reasoning']}")
 print(f"\nSuggested wind speed: {llm['parameters']['cfd']['wind_speed']} m/s")
 
-# 判断是否合理
+# Check if reasonable
 if llm['parameters']['cfd']['wind_speed'] > 20.0:
     print("⚠️  Warning: Wind speed seems too high!")
 ```
 
-### 场景2: 验证最终参数
+### Scenario 2: Validate final parameters
 
 ```python
-# 读取最终参数
+# Read final parameters
 with open('parameter_examples/final_cfd_parameters_example.json') as f:
     final = json.load(f)
 
-# 检查关键参数
+# Check key parameters
 cfd = final['cfd']
 print(f"Wind speed: {cfd['wind_speed']} m/s")
 print(f"Wind direction: {cfd['wind_direction']}°")
 print(f"Temperature: {cfd['temperature']}°C")
 
-# 验证参数范围
+# Validate parameter ranges
 assert 0 <= cfd['wind_speed'] <= 30, "Wind speed out of range"
 assert 0 <= cfd['wind_direction'] < 360, "Wind direction out of range"
 print("✅ All parameters validated")
 ```
 
-### 场景3: 保存优秀的参数组合
+### Scenario 3: Save a good parameter set
 
 ```python
-# 如果这次分析结果很好，保存为新配置
+# If this run produced good results, save as a new config
 import shutil
 
 shutil.copy(
@@ -292,22 +292,22 @@ print("✅ Saved as new configuration template")
 
 ---
 
-## 💡 提示
+## 💡 Tips
 
-1. **LLM建议文件** 显示LLM如何理解你的查询
-2. **最终参数文件** 显示实际运行时使用的参数
-3. 对比两者可以了解参数的最终来源
-4. 使用这些示例理解参数追踪功能的工作方式
-
----
-
-## 📚 相关文档
-
-- [参数追踪详细说明](../PARAMETER_TRACKING.md)
-- [JSON配置使用指南](../USAGE_JSON_CONFIG.md)
-- [参数详细说明](../solver_parameters_README.md)
+1. **LLM suggestion files** show how the LLM interpreted your query
+2. **Final parameter files** show the parameters actually used at runtime
+3. Comparing the two shows where each value ultimately came from
+4. Use these examples to understand how parameter tracking works
 
 ---
 
-**更新日期**: 2025-11-03
+## 📚 Related documentation
+
+- [Parameter tracking details](../PARAMETER_TRACKING.md)
+- [JSON configuration usage guide](../USAGE_JSON_CONFIG.md)
+- [Parameter reference](../solver_parameters_README.md)
+
+---
+
+**Last updated**: 2025-11-03
 
