@@ -1,0 +1,61 @@
+# API keys / secrets
+config.py
+API.txt
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# Large results / caches
+results/
+rt_cache/
+*.7z
+*.zip
+
+# Large STL datasets (keep only the small example)
+example_stl/building.stl
+example_stl/buildings_v2/
+example_stl/buildings_v3/
+example_stl/lentor_condo/
+example_stl/lentor_condo.zip
+example_stl/town_00001_500_1.379_103.893_14553_1532/
+example_stl/results/
+
+# Development / deprecated solvers
+new_solvers/
+
+# Literature PDFs
+Literature/
+
+# Generated HTML
+*.html
+
+# Internal dev notes (not needed for public repo)
+command.txt
+CHANGELOG_JSON_CONFIG.md
+UPDATE_NOTES_20251103.md
+SYNC_CHECKLIST.md
+PARAMETER_TRACKING.md
+PARAMETER_TRACKING_SUMMARY.md
+PARAMETER_SYNC_SUMMARY.md
+SOLAR_PARAMS_FIX.md
+QUICK_START_LLM_CONTROL.md
+LLM_PARAMS_CONTROL.md
+PARAMETER_MAPPING.md
+USAGE_JSON_CONFIG.md
+README_Nov.md
+README_internal.md
+paper_ai_conference.md
+stl_analysis_agent.py
+demo_llm_control.py
+test_config_loading.py
+test_parameter_tracking.py
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,22 @@
+{
+  "source": "Final Merged Parameters",
+  "timestamp": "2025-11-03T14:30:20.654321",
+  "priority_order": [
+    "1. JSON config file (base)",
+    "2. LLM suggestions (override)",
+    "3. User parameters (final override)"
+  ],
+  "cfd": {
+    "wind_speed": 12.0,
+    "wind_direction": 180.0,
+    "height": 2.0,
+    "temperature": 26.0,
+    "humidity": 90.0,
+    "voxel_pitch": 1.0,
+    "buffer_ratio": 1.5,
+    "alpha_t": 0.1,
+    "alpha_rh": 0.1,
+    "building_radius": 500.0
+  }
+}
+

@@ -1,0 +1,19 @@
+# FastAPI Backend for SG 3D Export
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.19
+google-generativeai==0.8.4
+pydantic==2.10.4
+python-dotenv==1.0.1
+aiofiles==24.1.0
+
+# STL processing
+numpy>=1.24.0
+numpy-stl>=3.0.0
+
+# Image processing
+Pillow>=10.0.0
+opencv-python>=4.8.0
+
+# HTTP requests
+requests>=2.31.0

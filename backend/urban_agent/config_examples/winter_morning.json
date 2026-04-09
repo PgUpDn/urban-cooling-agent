@@ -1,0 +1,27 @@
+{
+  "cfd": {
+    "wind_speed": 2.5,
+    "wind_direction": 0.0,
+    "height": 2.0,
+    "temperature": 24.0,
+    "humidity": 65.0,
+    "voxel_pitch": 4.0,
+    "buffer_ratio": 0.10,
+    "alpha_t": 1.5,
+    "alpha_rh": 8.0,
+    "building_radius": 100.0
+  },
+  "solar": {
+    "time": "2025-12-21 10:00:00+08:00",
+    "latitude": 1.3521,
+    "longitude": 103.8198,
+    "elevation": 15.0,
+    "DNI": 650.0,
+    "DHI": 160.0,
+    "rays_per_receiver": 64,
+    "ground_buffer": 20.0,
+    "ground_res": 25.0,
+    "receiver_offset": 0.1
+  }
+}
+

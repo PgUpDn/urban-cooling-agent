@@ -1,0 +1,26 @@
+# Core Dependencies
+openai>=1.0.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langgraph>=0.0.20
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+
+# 3D Geometry and Visualization
+trimesh>=3.21.0
+matplotlib>=3.7.0
+Pillow>=9.5.0
+vedo>=2023.0.0
+
+# Spatial Indexing (for CFD)
+rtree>=1.0.0
+
+# Solar Analysis
+pvlib>=0.10.0
+
+# Optional but recommended
+python-dateutil>=2.8.0
+pytz>=2023.3

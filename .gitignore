@@ -1,26 +1,39 @@
-# Logs
-logs
+# ── Node / Frontend ──────────────────────────────
+node_modules/
+dist/
+dist-ssr/
+*.local
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# ── Python / Backend ────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.so
 
-# Environment files (may contain API keys)
+# Backend runtime artifacts
+backend/urban_agent/results/
+backend/urban_agent/region_stl/
+backend/urban_agent/config.py
+backend/sg-3d-export/exported_stls_blender_coords/
+backend/sg-3d-export/exported_stls_blender_coords.7z
+backend/sg-3d-export/sg-building-binary.stl
+backend/sg-3d-export/building_data_final.csv
+
+# ── Secrets / Environment ────────────────────────
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 
-# Editor directories and files
+# ── Editor ───────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
