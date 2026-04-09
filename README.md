@@ -271,12 +271,8 @@ python main.py
 
 <br/>
 
----
+## Author
 
-<div align="center">
-
-**Dr. Xinyu Yang** · A\*STAR Institute of High Performance Computing (IHPC), Singapore
-
-MIT License
+Dr. Xinyu Yang from A*STAR IHPC (yang_xinyu@a-star.edu.sg)
 
 </div>
