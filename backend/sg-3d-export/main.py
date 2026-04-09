@@ -905,8 +905,11 @@ async def prepare_region_stl(
 
     count = 0
     for b in buildings:
-        src = Path(b.get("stl_file", "")) if isinstance(b, dict) else Path(getattr(b, "stl_file", ""))
-        if src.exists():
+        raw = b.get("file_path", "") if isinstance(b, dict) else getattr(b, "file_path", "")
+        if not raw:
+            continue
+        src = Path(str(raw))
+        if src.is_file():
             dst = stl_dir / src.name
             if not dst.exists():
                 os.symlink(src, dst)
