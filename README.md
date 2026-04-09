@@ -1,147 +1,137 @@
-# Urban Cooling Agent - Frontend
+# Urban Cooling Agent
 
-A modern, beautiful React-based frontend for the Urban Cooling Agent simulation workspace. This application provides an intuitive interface for urban microclimate analysis, CFD simulations, and thermal comfort assessments.
+An AI-driven urban microclimate simulation platform that combines CFD wind analysis, solar irradiance modelling, and thermal comfort (PET/MRT) assessment for urban districts in Singapore.
 
-## Features
+Users interact through natural language — describe an analysis scenario, select a region on an interactive map, and the system orchestrates the full simulation pipeline automatically.
 
-- **Interactive Chat Interface**: Communicate with the AI agent using natural language
-- **Real-time Simulation Dashboard**: View and analyze simulation results with heatmaps
-- **Scenario Comparison**: Compare different urban cooling strategies side-by-side
-- **Parameter Configuration**: Fine-tune simulation parameters for accurate results
-- **Responsive Design**: Works seamlessly on desktop and tablet devices
+**Live demo**: [pgupdn.github.io/urban-cooling-agent](https://pgupdn.github.io/urban-cooling-agent/)
 
-## Tech Stack
+## What It Does
 
-- **React 19** - UI Framework
-- **TypeScript** - Type-safe JavaScript
-- **Vite** - Fast build tool
-- **Tailwind CSS** - Utility-first styling
-- **Recharts** - Data visualization
-- **Google Gemini API** - AI-powered chat (optional)
+1. **Chat with the agent** — describe what you want to analyse (e.g. *"Run a coupled CFD + solar audit for the inter-monsoon period"*)
+2. **Select a region** — pick a preset district or draw a rectangle on the Map tab to choose buildings
+3. **Automatic pipeline** — the agent resolves weather data, prepares geometry, runs solvers, and generates a narrative report
+4. **Explore results** — interactive dashboard with PET heatmaps, temporal profiles, and downloadable artifacts (VTK, CSV)
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│  Frontend  (React + Vite, port 3000)            │
+│  Chat │ Map (Leaflet) │ Dashboard │ Comparison  │
+└──────┬──────────┬───────────────────────────────┘
+       │          │
+       ▼          ▼
+  urban_agent    sg-3d-export
+  (port 8001)    (port 8000)
+  FastAPI         FastAPI
+  LangGraph       BuildingIndex
+  CFD / Solar     Per-building STL
+  PET / MRT       Region prepare
+```
+
+| Service | Port | Role |
+|---------|------|------|
+| Frontend | 3000 | React UI (Vite dev server) |
+| sg-3d-export | 8000 | Building index, region STL preparation |
+| urban_agent | 8001 | LLM orchestration, CFD/solar solvers |
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
+- Node.js 18+
+- Python 3.10+ with `urban_agent` and `sg-3d-export` backends installed
 
-### Installation
+### Run all three services
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/urban-cooling-agent.git
-cd urban-cooling-agent
-
-# Install dependencies
-npm install
-
-# Create environment file
-cp .env.example .env.local
-
-# Start development server
-npm run dev
+bash ~/start_all.sh
 ```
+
+Or start individually:
+
+```bash
+# 1. Building index backend (port 8000)
+cd /home/ubuntu/sg-3d-export/backend && source .venv/bin/activate && python3 main.py
+
+# 2. Simulation backend (port 8001)
+cd /home/ubuntu/urban_agent && source .venv/bin/activate && python api_server.py
+
+# 3. Frontend (port 3000)
+cd /home/ubuntu/urban-cooling-frontend && npm install && npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
 
 ### Environment Variables
 
-Create a `.env.local` file with the following variables:
+Create `.env.local` (git-ignored):
 
 ```env
-# Optional: Gemini API Key for AI chat functionality
-GEMINI_API_KEY=your_api_key_here
-
-# Backend API URL (leave empty for demo mode)
-BACKEND_API_URL=https://your-backend-url.com/api
+GEMINI_API_KEY=your_key        # Optional — Gemini chat fallback
+BACKEND_API_URL=               # Leave empty for local dev (uses Vite proxy)
 ```
 
-## Connecting to Backend
-
-This frontend is designed to work with the Urban Cooling Agent backend. To connect:
-
-1. Deploy your backend agent
-2. Set the `BACKEND_API_URL` environment variable to your backend URL
-3. For GitHub Pages deployment, add `BACKEND_API_URL` to your repository secrets
-
-### Backend API Endpoints Expected
-
-The frontend expects the following endpoints from your backend:
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/chat` | POST | Send message to agent |
-| `/simulation/start` | POST | Start a new simulation |
-| `/simulation/{id}/status` | GET | Get simulation progress |
-| `/simulation/{id}/results` | GET | Get simulation results |
-| `/simulation/{id}/export` | GET | Export report (PDF/CSV/VTK) |
-
-## Deployment to GitHub Pages
-
-This project is configured for automatic deployment to GitHub Pages.
-
-### Setup
-
-1. Push your code to GitHub
-2. Go to repository **Settings** > **Pages**
-3. Set Source to "GitHub Actions"
-4. (Optional) Add secrets in **Settings** > **Secrets and variables** > **Actions**:
-   - `GEMINI_API_KEY` - Your Gemini API key
-   - `BACKEND_API_URL` - Your deployed backend URL
-
-### Important: Update Base Path
-
-Before deploying, update the `base` path in `vite.config.ts` to match your repository name:
-
-```typescript
-base: mode === 'production' ? '/YOUR-REPO-NAME/' : '/',
-```
-
-### Manual Build
-
-```bash
-# Build for production
-npm run build
-
-# Preview the build locally
-npm run preview
-```
+For GitHub Pages deployment, add these as **repository secrets** under Settings → Secrets → Actions.
 
 ## Project Structure
 
 ```
 urban-cooling-frontend/
+├── App.tsx                      # Root component, state, routing
 ├── components/
-│   ├── ChatInterface.tsx    # Main chat UI
-│   ├── ComparisonView.tsx   # Scenario comparison
-│   ├── ParamSidebar.tsx     # Parameter configuration
-│   ├── ResultsDashboard.tsx # Simulation results
-│   └── WorkflowSidebar.tsx  # Workflow progress
+│   ├── ChatInterface.tsx        # Chat UI with confirm/clarify flow
+│   ├── RegionSelect.tsx         # Leaflet map for area selection
+│   ├── ParamSidebar.tsx         # Live simulation parameters
+│   ├── ResultsDashboard.tsx     # Heatmaps, charts, artifacts
+│   ├── ComparisonView.tsx       # Side-by-side scenario comparison
+│   └── WorkflowSidebar.tsx      # Pipeline progress tracker
 ├── services/
-│   ├── agentService.ts      # Backend API client
-│   └── geminiService.ts     # Gemini AI service
-├── App.tsx                  # Main application
-├── types.ts                 # TypeScript types
-├── constants.ts             # App constants
-└── index.tsx                # Entry point
+│   ├── agentService.ts          # Backend API client
+│   └── geminiService.ts         # Gemini AI fallback
+├── types.ts                     # TypeScript interfaces
+├── nginx-cooling.conf           # Production nginx config snippet
+└── .github/workflows/deploy.yml # GitHub Pages CI/CD
 ```
 
-## Demo Mode
+## Key Features
 
-The application runs in demo mode when no backend is configured. In this mode:
-- Chat responses are simulated
-- Simulation results show mock data
-- All UI features remain functional for testing
+- **Intent classification** — LLM determines if a message is chat or analysis request
+- **Temporal clarification** — agent asks for time period if missing, before running
+- **Scenario confirmation** — user reviews proposed scenario before committing compute
+- **Custom region selection** — Leaflet map with district presets and freehand rectangle drawing
+- **Per-building STL preparation** — symlinks individual building STLs for the solver
+- **Real-time progress** — live parameter updates and status messages during simulation
+- **State persistence** — chat history, selected region, and active tab survive page refresh
 
-## License
+## Deployment
 
-MIT License - Feel free to use and modify for your projects.
+### GitHub Pages (static frontend only)
 
-## Contributing
+Pushes to `main` auto-deploy via GitHub Actions. The `VITE_BASE_PATH` in `deploy.yml` must match the repo name (`/urban-cooling-agent/`).
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Production with nginx
+
+Copy `nginx-cooling.conf` into your nginx server block. It serves the built frontend under `/cooling/` and proxies API calls:
+
+- `/cooling/api/` → `127.0.0.1:8001` (urban_agent)
+- `/cooling/geo-api/` → `127.0.0.1:8000` (sg-3d-export)
+
+## Tech Stack
+
+- **React 19** + TypeScript + Vite 6
+- **Tailwind CSS** (CDN) for styling
+- **Leaflet** + Leaflet.draw for interactive maps
+- **Recharts** for data visualisation
+- **FastAPI** backends (urban_agent + sg-3d-export)
+- **LangGraph** for agent orchestration
+- **OpenAI GPT-4o** for intent classification and report generation
 
 ## Author
 
-Dr. Xinyu Yang from A*STAR IHPC (yang_xinyu@a-star.edu.sg)
+Dr. Xinyu Yang — A\*STAR IHPC (yang_xinyu@a-star.edu.sg)
 
+## License
+
+MIT
