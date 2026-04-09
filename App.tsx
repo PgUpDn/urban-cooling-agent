@@ -109,14 +109,16 @@ const App: React.FC = () => {
       const ok = await checkBackendHealth();
       if (!c) {
         setBackendReady(ok);
+        const welcomeMsg = {
+          id: nid(), sender: 'agent' as const, timestamp: ts(), type: 'text' as const,
+          text: ok
+            ? 'Urban Cooling Agent ready. I can run CFD wind simulations, solar irradiance analysis, and thermal comfort (PET/MRT) assessments for urban districts.\n\nExample prompt:\n\u2022 "Run a fully coupled CFD + solar audit for the inter-monsoon period, emphasizing district comfort and energy demand"'
+            : 'Backend not reachable — the server may be offline. Try refreshing in a moment.',
+        };
         setMessages(prev => {
-          if (prev.length > 0) return prev;
-          return [{
-            id: nid(), sender: 'agent', timestamp: ts(), type: 'text',
-            text: ok
-              ? 'Urban Cooling Agent ready. I can run CFD wind simulations, solar irradiance analysis, and thermal comfort (PET/MRT) assessments for urban districts.\n\nExample prompt:\n\u2022 "Run a fully coupled CFD + solar audit for the inter-monsoon period, emphasizing district comfort and energy demand"'
-              : 'Backend not reachable. Start the server with:\ncd /home/ubuntu/urban_agent && source .venv/bin/activate\nuvicorn api_server:app --host 0.0.0.0 --port 8001',
-          }];
+          if (prev.length === 0) return [welcomeMsg];
+          if (prev.length === 1 && prev[0].text?.startsWith('Backend not reachable')) return [welcomeMsg];
+          return prev;
         });
       }
     })();
