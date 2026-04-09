@@ -51,7 +51,6 @@ An end-to-end platform for urban microclimate analysis in Singapore. Describe an
                      │ Solar → PET  │  │ Region clip  │
                      │ MRT → Report │  │              │
                      └──────────────┘  └──────────────┘
-                        port 8001         port 8000
 ```
 
 This is a **monorepo** containing all three services:
@@ -136,7 +135,7 @@ cd urban-cooling-agent
 
 ```bash
 npm install
-npm run dev                    # → http://localhost:3000
+npm run dev
 ```
 
 ### 3. Simulation Backend (`urban_agent`)
@@ -149,7 +148,7 @@ pip install -r requirements.txt
 cp config_template.py config.py
 # Edit config.py → set your OPENAI_API_KEY
 
-python api_server.py           # → http://localhost:8001
+python api_server.py
 ```
 
 ### 4. Building Geometry Backend (`sg-3d-export`)
@@ -159,7 +158,7 @@ cd backend/sg-3d-export
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-python main.py                 # → http://localhost:8000
+python main.py
 ```
 
 > **Note**: The building STL dataset (~730 MB, 154k files) is not included in this repo due to size.
@@ -186,13 +185,13 @@ A reference nginx configuration is included in `nginx-cooling.conf`:
 
 ```
 /cooling/          →  static frontend (dist/)
-/cooling/api/      →  urban_agent:8001
-/cooling/geo-api/  →  sg-3d-export:8000
+/cooling/api/      →  urban_agent
+/cooling/geo-api/  →  sg-3d-export
 ```
 
 ## API Reference
 
-### Simulation Service — `urban_agent` (`:8001`)
+### Simulation Service — `urban_agent`
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -205,7 +204,7 @@ A reference nginx configuration is included in `nginx-cooling.conf`:
 | `/api/simulation/{id}/results` | `GET` | Final results, metrics, and artifact URLs |
 | `/api/files/{path}` | `GET` | Serve generated artifacts (images, VTK, CSV) |
 
-### Building Geometry Service — `sg-3d-export` (`:8000`)
+### Building Geometry Service — `sg-3d-export`
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
