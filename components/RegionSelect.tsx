@@ -47,6 +47,18 @@ export const RegionSelect: React.FC<RegionSelectProps> = ({ selectedStlDir, onRe
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!selectedStlDir) {
+      setBounds(null);
+      setBuildingCount(null);
+      setError(null);
+      if (rectRef.current && mapRef.current) {
+        mapRef.current.removeLayer(rectRef.current);
+        rectRef.current = null;
+      }
+    }
+  }, [selectedStlDir]);
+
   const fetchCount = useCallback(async (b: Bounds) => {
     setLoading(true); setError(null);
     try {

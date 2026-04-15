@@ -291,8 +291,10 @@ const App: React.FC = () => {
 
   const handleNew = useCallback(() => {
     removeStorage(STORAGE_KEYS.activeSessionId);
+    removeStorage(STORAGE_KEYS.selectedStlDir);
     setSimResults(null);
     setSessionId(null);
+    setSelectedStlDir(null);
     setLiveParams({});
     setSteps(IDLE);
     setMessages(p => [...p, { id: nid(), sender: 'agent', text: 'Ready for a new analysis.', timestamp: ts(), type: 'status' }]);
