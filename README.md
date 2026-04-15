@@ -263,7 +263,7 @@ python main.py
 | | |
 |:--|:--|
 | **Frontend** | React 19 · TypeScript · Tailwind CSS · Vite 6 · Leaflet · Recharts |
-| **Agent** | LangGraph · OpenAI GPT-4o |
+| **Agent** | LangGraph · OpenAI GPT |
 | **Backends** | FastAPI · Python 3.12 |
 | **Solvers** | Custom CFD · Solar irradiance (ray-tracing) · PET/MRT |
 | **Data** | 154,667 Singapore building models (STL) · NEA real-time weather |
