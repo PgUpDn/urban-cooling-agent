@@ -82,7 +82,7 @@ Chat history, selected region, simulation results, and active tab all survive pa
 │                    Frontend                          │
 │            React · Vite · Tailwind · Leaflet         │
 │                                                      │
-│   💬 Chat    🗺️ Map    📊 Dashboard    🔀 Compare  │
+│   💬 Chat    🗺️ Map    📊 Dashboard    🔀 Compare    │
 └────────┬─────────────────────┬───────────────────────┘
          │                     │
          ▼                     ▼
