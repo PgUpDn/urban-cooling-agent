@@ -279,10 +279,6 @@ MIT License - Feel free to use and modify for your projects.
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Author
-
-Dr. Xinyu Yang, Po-Yen Lai and Jian Cheng Wong from A*STAR IHPC (yang_xinyu@a-star.edu.sg)
-
 ## Reference
 
 Lai, P.-Y., Yang, X., Low, D., Liu, H., and Wong, J. C. "Agentic AI-Enabled Framework for
