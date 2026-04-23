@@ -283,4 +283,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Dr. Xinyu Yang, Po-Yen Lai and Jian Cheng Wong from A*STAR IHPC (yang_xinyu@a-star.edu.sg)
 
+## Reference
+
+Lai, P.-Y., Yang, X., Low, D., Liu, H., and Wong, J. C. "Agentic AI-Enabled Framework for
+Thermal Comfort and Building Energy Assessment in Tropical Urban Neighborhoods." Accepted to
+IAQVEC 2026
+
 </div>
