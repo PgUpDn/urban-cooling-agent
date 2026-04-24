@@ -283,6 +283,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Lai, P.-Y., Yang, X., Low, D., Liu, H., and Wong, J. C. "Agentic AI-Enabled Framework for
 Thermal Comfort and Building Energy Assessment in Tropical Urban Neighborhoods." Accepted to
-IAQVEC 2026
+IAQVEC 2026, https://arxiv.org/abs/2604.21787
 
 </div>
